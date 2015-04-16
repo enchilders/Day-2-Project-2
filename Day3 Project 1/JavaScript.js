@@ -1,4 +1,4 @@
-﻿fireBaseUrl = "https://mydatabaseday2.firebaseio.com/.json";
+﻿fireBaseUrl = "https://day03database.firebaseio.com/";
 var contacts = [];
 var Contact = function (name, phone, address, email) {
     this.name = name;
@@ -10,7 +10,7 @@ var Contact = function (name, phone, address, email) {
 var createContact = function () {
     var name = document.getElementById("nameId").value;
     var phone = document.getElementById("phoneId").value;
-    var address = document.getElementById("emailId").value;
+    var address = document.getElementById("addressId").value;
     var email = document.getElementById("emailId").value;
     var contactObj = new Contact(name, phone, address, email);
     postAjax(contactObj);
@@ -18,7 +18,7 @@ var createContact = function () {
 
 var postAjax = function (contact) {
     var request = new XMLHttpRequest();
-    request.open('POST', fireBaseUrl, true);
+    request.open('POST', fireBaseUrl + '/.json', true);
     request.send(JSON.stringify(contact));
     request.onload = function () {
         if (this.status >= 200 && this.status < 400) {
@@ -26,38 +26,51 @@ var postAjax = function (contact) {
         } else {
             console.log("Error" + this.status)
         }
+        displayContacts();
     }
 
 }
-/*
+
 var getAjax = function () {
     var request = new XMLHttpRequest();
-    request.open('GET', fireBaseUrl, true);
-    request.send();
+    request.open('GET', fireBaseUrl + '/.json', true);
     request.onload = function () {
-        var response = JSON.parse(this.response);
-        console.log("response " + response);
-        for (var prop in response) {
-            contacts.push(response[prop]);
-            console.log("response[prop]: " + response[prop]);
+        if (this.status >= 200 && this.status < 400) {
+            //success cb
+            var response = JSON.parse(this.response);
+            for (var prop in response) {
+                response[prop].key = prop;
+                contacts.push(response[prop]);
+            }
+            
         }
-        console.log("contacts: "+ contacts);
-    }
-    displayContacts();
-}
+        else {
+            console.error(this.response);
+            //error cb
+        }
+        displayContacts();
 
-var deleteAjax = function () {
-    var request = new XMLHttpRequest();
-    request.open('DELETE', fireBaseUrl, true);
+    }
     request.send();
 }
+getAjax();
+
+
+
 
 var displayContacts = function () {
-    var elem = document.getElementById("displayContacts");
-    elem.innerHTML = '';
+    var elemString=document.getElementById('displayContacts');
+    elemString.innerHTML = '';
     for (var i = 0; i < contacts.length; i++) {
-        elem.innnerHTML += '<div class="well"><em>Name: ' + contacts[i].name + '<br/><em>Phone: ' + contacts[i].phone + '<br/><em>adress: ' + contacts[i].address + '<br/><em>email: ' + contacts[i].email + '<br/><button class="btn btn-warning" onlick=editContact(' + i + ')>Edit</button><button class="btn btn-danger" onclick=removeContact(' + i + ')>Remove</button>';
+        elemString.innerHTML += '<tr>'
+        elemString.innerHTML += '<td>' + contacts[i].name + '</td>'
+        elemString.innerHTML += '<td>' + contacts[i].phone + '</td>'
+        elemString.innerHTML += '<td>' + contacts[i].address + '</td>'
+        elemString.innerHTML += '<id>' + contacts[i].email + '</td>'
+        elemString.innerHTML += '<td><btn class="well"><em>Name: ' + contacts[i].name + '<br/><em>Phone: ' + contacts[i].phone + '<br/><em>adress: ' + contacts[i].address + '<br/><em>email: ' + contacts[i].email + '<br/><button class="btn btn-warning" onclick=editContact(' + i + ')>Edit</button><button class="btn btn-danger" onclick=removeContact(' + i + ')>Remove</button>';
+        elemString.innerHTML += '</tr>';
     }
+    //document.getElementById('displayContacts').innerHTML = elemString;
 }
 
 
@@ -69,11 +82,20 @@ var editContact = function (i) {
     displayContacts();
 }
 
-var deleteContact = function (i) {
-    //contacts.splice(i, 1);
-    deleteAjax();
-    displayContacts();
+var removeContact = function (i) {
+    var request = new XMLHttpRequest();
+    var url = fireBaseUrl + contacts[i].key + '/.json';
+    request.open('DELETE', url, true);
+    request.onload = function () {
+        if (this.status >= 200 && this.status < 400) {
+            contacts.splice(i, 1);
+            displayContacts();
+        }
+        else {
+            //error cb
+        }
+    }
+    request.send();
 }
 
 getAjax();
-*/
